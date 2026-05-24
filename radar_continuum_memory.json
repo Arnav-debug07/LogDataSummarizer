@@ -1,0 +1,10 @@
+{
+  "last_processed_timestamp": "1970-01-01 00:00:00",
+  "known_critical_faults": [
+    "ERR_403_UNDERVOLT",
+    "ERR_501_ALIGN_FAIL"
+  ],
+  "active_anomalies": {
+    "AN-FPS-117_A": "Last fault tracked: ERR_501_ALIGN_FAIL"
+  }
+}

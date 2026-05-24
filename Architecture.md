@@ -8,9 +8,48 @@ LogDataSummarizer implements a **Retrieval-Augmented Generation (RAG)** pipeline
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                     USER QUERY                              │
-│              "Why did the radar fail?"                       │
+│                     USER INPUT                              │
+│                                                             │
+│  Interactive → JSON File → Query                           │
+│    Records     Upload     Database                         │
 └────────────────────┬────────────────────────────────────────┘
+                     │
+                     ▼
+        ┌────────────────────────┐
+        │  DATA INGESTION        │
+        │  (Validation & Add)    │
+        │                        │
+        │ 1. Validate format     │
+        │ 2. Auto-generate ID    │
+        │ 3. Store in LanceDB    │
+        └────────────┬───────────┘
+                     │
+                     ▼
+        ┌────────────────────────┐
+        │  VECTOR EMBEDDING      │
+        │  (BGE Model)           │
+        │                        │
+        │ Convert log_message    │
+        │ to 384-dim vectors     │
+        └────────────┬───────────┘
+                     │
+                     ▼
+        ┌────────────────────────┐
+        │  DATABASE STORAGE      │
+        │  (./local_radar_db)    │
+        │                        │
+        │ Index: timestamp,      │
+        │        radar_id,       │
+        │        error_code      │
+        └────────────┬───────────┘
+                     │
+                     ├─────────────────────────────────────┐
+                     │                                     │
+                     ▼                                     ▼
+        ┌────────────────────────┐        ┌────────────────────────┐
+        │  USER INQUIRY          │        │  DATABASE STATS        │
+        │  "Why did radar fail?" │        │  View records          │
+        └────────────┬───────────┘        └────────────────────────┘
                      │
                      ▼
         ┌────────────────────────┐
@@ -72,7 +111,50 @@ LogDataSummarizer implements a **Retrieval-Augmented Generation (RAG)** pipeline
 
 ## 🔧 Core Components
 
-### 1. **LanceDB Vector Database**
+### 1. **Data Ingestion Layer**
+
+**Purpose:** Accept user telemetry data and prepare for storage
+
+**Input Methods:**
+
+#### A) Interactive Mode
+```
+User Input → Validation → Record Creation → Batch Add
+```
+
+#### B) JSON File Mode
+```
+JSON File → Parse → Validate → Bulk Add
+```
+
+**Process:**
+
+```python
+def add_telemetry_record(radar_id, timestamp, azimuth, elevation,
+                         voltage_mv, error_code, log_message) -> bool:
+    """
+    1. Create record dict with all fields
+    2. Auto-generate ID if not provided
+    3. Add to LanceDB table
+    4. Return success/failure
+    """
+```
+
+**Input Validation:**
+- Timestamp format: YYYY-MM-DD HH:MM:SS
+- Azimuth: 0-360 (float)
+- Elevation: -90 to +90 (float)
+- Voltage: 0-9999 (integer)
+- Error code: "OK" or "ERR_*"
+- Log message: non-empty string
+
+**Error Handling:**
+- Invalid format → Exception caught → Return False
+- Database error → Logged → Fallback attempted
+
+---
+
+### 2. **LanceDB Vector Database**
 
 **Purpose:** Store and retrieve radar telemetry logs with semantic embeddings
 
@@ -81,7 +163,7 @@ LogDataSummarizer implements a **Retrieval-Augmented Generation (RAG)** pipeline
 **Schema (RadarLogSchema):**
 ```python
 class RadarLogSchema(LanceModel):
-    id: str                          # Unique identifier
+    id: str                          # Unique identifier (auto-generated)
     timestamp: str                   # ISO format: "2026-05-22 14:00:00"
     radar_id: str                    # Unit identifier: "AN-FPS-117_A"
     azimuth: float                   # Horizontal angle (0-360°)
@@ -97,78 +179,22 @@ class RadarLogSchema(LanceModel):
 | Operation | Method | Purpose |
 |-----------|--------|---------|
 | Create Table | `db.create_table()` | Initialize radar_telemetry table |
-| Insert Data | `table.add()` | Add sample telemetry records |
+| Insert Data | `table.add()` | Add telemetry records |
 | Export to Pandas | `table.to_pandas()` | Convert to DataFrame for filtering |
 | Query | Manual pandas filtering | Search logs by text content |
 
 **Why LanceDB?**
 - ✅ Lightweight vector DB optimized for ML
-- ✅ No server required (embedded SQLite-like)
+- ✅ No server required (embedded)
 - ✅ Automatic vector indexing
 - ✅ Local-first, privacy-preserving
 - ✅ Integrates seamlessly with Python pandas
 
 ---
 
-### 2. **Ollama + Qwen LLM**
-
-**Purpose:** Generate expert-level technical analysis of radar logs
-
-**Model:** `qwen2.5-coder:7b-instruct-q5_K_M`
-
-**Specifications:**
-- **Architecture:** Transformer-based LLM
-- **Parameters:** 7 billion (7B)
-- **Quantization:** Q5_K_M (5-bit, memory efficient)
-- **Size:** ~4.7GB on disk
-- **Context Window:** 4,096 tokens
-- **Inference Latency:** 5-10 seconds per query (on 16GB RAM)
-
-**Configuration:**
-```python
-OLLAMA_URL = "http://localhost:11434/api/generate"
-MODEL_NAME = "qwen2.5-coder:7b-instruct-q5_K_M"
-temperature = 0.0  # Deterministic output (no randomness)
-timeout = 120 seconds
-```
-
-**Request Format:**
-```json
-{
-    "model": "qwen2.5-coder:7b-instruct-q5_K_M",
-    "prompt": "Analyze these radar logs...",
-    "stream": false,
-    "options": { "temperature": 0.0 },
-    "format": "json"  // Optional: enforce JSON response
-}
-```
-
-**Response Format:**
-```json
-{
-    "response": "Technical analysis text...",
-    "done": true,
-    "total_duration": 8500000000,  // nanoseconds
-    "load_duration": 2100000000,
-    "prompt_eval_count": 450,
-    "prompt_eval_duration": 3200000000,
-    "eval_count": 120,
-    "eval_duration": 2800000000
-}
-```
-
-**Why Qwen + Ollama?**
-- ✅ Open-source (no vendor lock-in)
-- ✅ Runs entirely offline
-- ✅ Excellent code/technical understanding
-- ✅ Fast inference on consumer hardware
-- ✅ No API costs or rate limits
-
----
-
 ### 3. **Embedding Model: BAAI/BGE-Small-EN-v1.5**
 
-**Purpose:** Convert text queries and log messages into 384-dimensional vectors for semantic similarity
+**Purpose:** Convert text queries and log messages into 384-dimensional vectors
 
 **Specifications:**
 - **Dimensions:** 384
@@ -180,7 +206,7 @@ timeout = 120 seconds
 **How It Works:**
 
 ```
-Input Text: "Voltage dropped below safe margins"
+Input: "Voltage dropped below safe margins"
     ↓
 [Tokenization] → [Word Embeddings] → [Transformer Layers] → [Pooling]
     ↓
@@ -190,20 +216,12 @@ Input Text: "Voltage dropped below safe margins"
 **Usage in System:**
 
 ```python
-# During ingestion (automatically applied to log_message)
 registry = get_registry().get("sentence-transformers")
 embedding_model = registry.create(name="BAAI/bge-small-en-v1.5")
 
-# LanceDB uses this to embed log_messages when added to table
+# LanceDB uses this automatically when records are added
 table.add(sample_telemetry)  # Embeddings created automatically
 ```
-
-**Why BGE-Small?**
-- ✅ Optimized for retrieval tasks (NDCG optimized)
-- ✅ Fast inference (~50ms per query)
-- ✅ Good semantic understanding
-- ✅ Lightweight (runs on CPU)
-- ✅ Multilingual support
 
 ---
 
@@ -256,7 +274,42 @@ def hybrid_retrieve(query_text, time_filter=None, limit=3, retry=0):
 
 ---
 
-### 5. **Continuum Memory System**
+### 5. **Ollama + Qwen LLM**
+
+**Purpose:** Generate expert-level technical analysis of radar logs
+
+**Model:** `qwen2.5-coder:7b-instruct-q5_K_M`
+
+**Specifications:**
+- **Architecture:** Transformer-based LLM
+- **Parameters:** 7 billion (7B)
+- **Quantization:** Q5_K_M (5-bit, memory efficient)
+- **Size:** ~4.7GB on disk
+- **Context Window:** 4,096 tokens
+- **Inference Latency:** 5-10 seconds per query (on 16GB RAM)
+
+**Configuration:**
+```python
+OLLAMA_URL = "http://localhost:11434/api/generate"
+MODEL_NAME = "qwen2.5-coder:7b-instruct-q5_K_M"
+temperature = 0.0  # Deterministic output (no randomness)
+timeout = 120 seconds
+```
+
+**Request Format:**
+```json
+{
+    "model": "qwen2.5-coder:7b-instruct-q5_K_M",
+    "prompt": "Analyze these radar logs...",
+    "stream": false,
+    "options": { "temperature": 0.0 },
+    "format": "json"  // Optional: enforce JSON response
+}
+```
+
+---
+
+### 6. **Continuum Memory System**
 
 **Purpose:** Persist fault history and anomalies across sessions
 
@@ -295,51 +348,27 @@ class ContinuumMemory:
     def get_context_string()
 ```
 
-**How It Works:**
-
-1. **On System Start:** Load existing JSON or create new
-2. **During Analysis:** Update fault list when errors encountered
-3. **LLM Context:** Include memory state in prompts for continuity
-4. **Persistence:** Auto-save after each update
-
-**Example Timeline:**
-
-```
-[Session 1]
-→ Query: "Why did radar fail?"
-→ Found: ERR_501_ALIGN_FAIL
-→ Memory: { known_faults: ["ERR_501_ALIGN_FAIL"] }
-→ Save to disk
-
-[Session 2 (next day)]
-→ Load memory from disk
-→ Memory now includes ERR_501_ALIGN_FAIL
-→ LLM has context: "This is a recurring issue..."
-→ New query finds ERR_403_UNDERVOLT
-→ Memory: { known_faults: ["ERR_501_ALIGN_FAIL", "ERR_403_UNDERVOLT"] }
-→ Save to disk
-```
-
-**Why Persistent Memory?**
-- ✅ Enables pattern recognition across time
-- ✅ LLM can identify recurring issues
-- ✅ Survives system restarts
-- ✅ Builds institutional knowledge
-
 ---
 
 ## 🔄 Complete Data Flow
 
-### Phase 1: Data Ingestion
+### Phase 1: Data Input
 
 ```
-Sample Telemetry Records
+User Input (Interactive/JSON)
     ↓
-[Schema Validation] (RadarLogSchema)
+[Schema Validation]
+    ├─ Check field types
+    ├─ Validate ranges
+    └─ Generate missing ID
     ↓
-[Text Embedding] (BAAI/BGE embedding model)
+[Text Embedding]
+    ├─ Extract log_message
+    ├─ BGE model processes
+    └─ Generate 384-dim vector
     ↓
-[LanceDB Insert] (table.add())
+[LanceDB Insert]
+    └─ table.add(record)
     ↓
 Local Vector Database: ./local_radar_db/
 ```
@@ -347,14 +376,14 @@ Local Vector Database: ./local_radar_db/
 ### Phase 2: Query Processing
 
 ```
-User Question: "Explain why radar switched to safe mode"
+User Question: "Why did the radar fail?"
     ↓
 [hybrid_retrieve]
-    ├─ Convert query to lowercase
-    ├─ Search in log_message column
-    ├─ Apply optional time filter
+    ├─ Convert to lowercase
+    ├─ Search in log_message
+    ├─ Apply optional filters
     ├─ Retry if no results
-    └─ Return up to 3 matching records
+    └─ Return top 3 matches
     ↓
 Retrieved Logs (JSON array)
 ```
@@ -365,26 +394,24 @@ Retrieved Logs (JSON array)
 Retrieved Logs + User Query
     ↓
 [Qwen LLM - Evaluation Prompt]
-    ├─ Instruction: "Analyze if more data needed"
-    ├─ Input: retrieved logs + user query
-    └─ Output: JSON { needs_more_data, refined_search_query }
+    ├─ "Do we need more data?"
+    └─ → JSON response
     ↓
 Evaluation Result
-    ├─ YES → Run refined search (return to Phase 2)
-    └─ NO → Proceed to synthesis
+    ├─ YES → Refined Search
+    └─ NO → Synthesis
 ```
 
 ### Phase 4: Report Synthesis
 
 ```
-All Retrieved Logs + Continuum Memory + User Query
+All Logs + Memory + Query
     ↓
-[Qwen LLM - Synthesis Prompt]
-    ├─ Instruction: "Generate technical report"
-    ├─ Input: logs, memory, query
-    └─ Output: Markdown technical analysis
+[Qwen LLM - Synthesis]
+    ├─ Generate analysis
+    └─ → Markdown report
     ↓
-Technical Report (Markdown)
+Technical Report
 ```
 
 ### Phase 5: Memory Persistence
@@ -392,14 +419,12 @@ Technical Report (Markdown)
 ```
 Retrieved Logs
     ↓
-[Extract Error Codes]
+[Extract Faults]
+    ├─ error_code != "OK"?
+    └─ Add to memory
     ↓
-[Update ContinuumMemory]
-    ├─ Add to known_critical_faults
-    ├─ Update active_anomalies
-    └─ Save to JSON
-    ↓
-./radar_continuum_memory.json (updated)
+[Save to JSON]
+    └─ radar_continuum_memory.json
 ```
 
 ---
@@ -474,6 +499,7 @@ if not results and retry < 2:
 | LLM Response | Invalid JSON | Use default { needs_more_data: false } |
 | LLM Analysis | Connection timeout | Return error message |
 | Memory Save | JSON write failure | Log warning, continue |
+| Input Validation | Invalid format | Prompt retry |
 
 ### Exception Handling
 
@@ -495,7 +521,8 @@ finally:
 
 | Operation | Complexity | Time |
 |-----------|-----------|------|
-| Text embedding (single log) | O(n) | ~5ms |
+| Input validation | O(1) | ~1ms |
+| Text embedding | O(n) | ~5ms |
 | Database retrieval | O(n) linear scan | ~10ms |
 | Pandas filtering | O(n) | ~20ms |
 | LLM inference | O(tokens) | 5-10 seconds |
@@ -519,7 +546,7 @@ finally:
 | Records per query | 3-10 | 1M+ |
 | Query time | 15-20s | Linear growth |
 | Memory overhead | ~5GB | Up to available RAM |
-| Batch size | 1 query | Parallel processing possible |
+| Batch size | 1000+ | Limited by RAM |
 
 ---
 
@@ -527,7 +554,7 @@ finally:
 
 ### Data Isolation
 ```
-User Query → [System Process] → Analysis Report
+User Input → [System Process] → Analysis Report
                     ↓
             Local LanceDB (not exposed)
             Local Ollama (port 11434, localhost only)
@@ -544,7 +571,7 @@ No external API calls. No data transmission.
 ### Audit Trail
 - Console logs all operations
 - Memory state persists for historical analysis
-- All LLM interactions are deterministic (temperature=0.0)
+- All LLM interactions deterministic (temperature=0.0)
 
 ---
 
@@ -552,13 +579,13 @@ No external API calls. No data transmission.
 
 ### Local Development
 ```
-User → Jupyter Notebook
+User → Python Script/Jupyter
         ↓
     Python Runtime
         ↓
     Ollama (localhost:11434)
     LanceDB (./local_radar_db)
-    Memory JSON (./radar_continuum_memory.json)
+    Memory (./radar_continuum_memory.json)
 ```
 
 ### Production Deployment (Future)
@@ -596,18 +623,27 @@ Distributed Memory (Redis/Memcached)
 2. **Additional Data Sources**
    - Stream live telemetry
    - Connect to syslog servers
+   - Parse log files automatically
 
 3. **Enhanced Retrieval**
    - Add vector similarity search
    - Implement BM25 hybrid search
+   - Add spatial/temporal indexing
 
 4. **Advanced Memory**
    - Time-series analysis of faults
    - Predictive anomaly detection
+   - Pattern recognition
 
 5. **Monitoring & Alerting**
    - Slack/Email notifications
    - Dashboard with history
+   - Real-time alerts
+
+6. **Data Export**
+   - CSV/Excel export
+   - PDF report generation
+   - Statistical analysis
 
 ---
 
@@ -616,6 +652,12 @@ Distributed Memory (Redis/Memcached)
 ### Unit Tests (Recommended)
 
 ```python
+def test_input_validation():
+    # Test with invalid values
+    assert validate_timestamp("2026-05-22 14:00:00") == True
+    assert validate_azimuth(45.2) == True
+    assert validate_azimuth(400.0) == False
+
 def test_hybrid_retrieve():
     # Test with known query
     results = hybrid_retrieve("voltage error")
@@ -642,6 +684,11 @@ def test_full_pipeline():
     mem = ContinuumMemory()
     report = process_radar_inquiry("Test query", mem)
     assert "Technical" in report or "ERROR" in report
+
+def test_json_input():
+    data = [{"id": "test", "timestamp": "2026-05-22 14:00:00", ...}]
+    result = bulk_add_telemetry(data)
+    assert result == True
 ```
 
 ---
@@ -665,9 +712,11 @@ def test_full_pipeline():
 - **Vector Embeddings** — Dense representation of text meaning
 - **LLM Inference** — Running language models locally
 - **Prompt Engineering** — Designing LLM instructions effectively
+- **Semantic Search** — Finding similar items by meaning, not keywords
 
 ---
 
-**Architecture Version:** 1.0
+**Architecture Version:** 2.0
 **Last Updated:** 24 May 2026
 **Status:** ✅ Production Ready
+**Input Modes:** Interactive, JSON File, Direct API

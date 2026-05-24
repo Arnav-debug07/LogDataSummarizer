@@ -2,13 +2,14 @@
 
 ## 📋 Project Overview
 
-**LogDataSummarizer** is an intelligent offline radar telemetry analysis system that leverages **Retrieval-Augmented Generation (RAG)** to interpret military radar logs and provide expert diagnostics. The system combines local LLM inference, vector embeddings, and persistent memory to deliver human-level technical analysis of radar system failures and anomalies.
+**LogDataSummarizer** is an intelligent offline radar telemetry analysis system that leverages **Retrieval-Augmented Generation (RAG)** to interpret military radar logs and provide expert diagnostics. The system combines local LLM inference, vector embeddings, and persistent memory to deliver human-level technical analysis of radar system performance.
 
 ### Key Features
-- 🔍 **Intelligent Log Retrieval** — Semantic search with fallback mechanisms
-- 🧠 **Local LLM Analysis** — Runs entirely offline using Qwen model via Ollama
+- 🔍 **Automatic Summary Generation** — Human-readable summaries of all telemetry data on demand
+- 🔴 **Error Code Analysis** — Technical severity ratings and recommended actions for all faults
+- 🧠 **Intelligent Log Retrieval** — Semantic search with fallback mechanisms
+- 🔄 **Custom Query Mode** — Ask specific questions about your radar data via RAG pipeline
 - 💾 **Persistent Memory** — Tracks fault history across sessions
-- 🔄 **Multi-Step RAG Pipeline** — Evaluate → Refine → Synthesize workflow
 - ⚡ **Production-Ready** — Comprehensive error handling and retry logic
 - 📥 **Multiple Input Methods** — Interactive, JSON file, or direct API
 
@@ -108,28 +109,23 @@ jupyter notebook Rag_Models.ipynb
 python Rag_Models.ipynb
 ```
 
-### Main Menu
+### Main Workflow
 
-When you run the program, you'll see:
+1. **Data Input** (Options 1-5)
+   - Load telemetry data interactively or from JSON file
+   - View expected data format
+   - Check database statistics
 
-```
-========================================================================
-🛰️  OFFLINE RADAR TELEMETRY ANALYZER
-Retrieval-Augmented Generation (RAG) Pipeline
-========================================================================
+2. **Automatic Summary** (Generated automatically)
+   - Human-readable overview of all telemetry data
+   - Key events and anomalies highlighted
+   - Performance metrics summarized
 
-----------------------------------------------------------------------
-📥 DATA INPUT OPTIONS
-----------------------------------------------------------------------
-1. Interactive Input (type records one by one)
-2. Load from JSON File
-3. View Input Format
-4. Skip Input & Query Database
-5. Display Database Stats
-6. Exit
-----------------------------------------------------------------------
-Select option (1-6):
-```
+3. **Post-Analysis Options** (Menu appears after summary)
+   - View error code details with severity levels
+   - Ask custom questions via RAG query mode
+   - Export database stats
+   - Regenerate summaries
 
 ---
 
@@ -225,26 +221,88 @@ ERR_999_UNKNOWN         → Unknown error
 
 ---
 
-## ❓ Query Examples
+## 📊 Analysis Features
 
-Once data is loaded, you can ask questions like:
+### 1. Automatic Summary (Default)
+
+When you load data and select "Skip Input & Analyze Data", the system automatically generates:
+- Overall system status assessment
+- Key events and anomalies found
+- Performance metrics (voltage ranges, etc.)
+- Critical issues highlighted
+
+**Example Output:**
+```
+The radar system operated for approximately 4 hours with overall stable 
+performance. Three critical voltage anomalies were detected at 14:02:15, 
+14:45:30, and 15:20:45. The system recovered automatically after each 
+incident. Mechanical alignment remained within acceptable parameters.
+```
+
+### 2. Error Code Details (Option 1)
+
+View comprehensive technical information about each error code:
 
 ```
-[Query] Enter your inquiry: Why did the radar system go into safe mode?
+[ERR_403_UNDERVOLT] (Occurrences: 3)
+├─ Severity: 🔴 CRITICAL
+├─ Description: Power supply voltage dropped below safe operating margins
+└─ Recommended Action: Check power supply connections and voltage regulator. 
+                       May require immediate system shutdown.
 
-[Query] Enter your inquiry: What voltage issues were detected?
-
-[Query] Enter your inquiry: Show me all critical faults from today
-
-[Query] Enter your inquiry: Explain the alignment failure on 2026-05-22
+[ERR_601_THERMAL_HIGH] (Occurrences: 1)
+├─ Severity: 🟠 HIGH
+├─ Description: Internal temperature exceeds safe operating limits
+└─ Recommended Action: Check cooling system and ventilation. 
+                       Reduce operational load if necessary.
 ```
 
-The system will:
-1. **Retrieve** relevant logs
-2. **Evaluate** if more data needed
-3. **Refine** search if necessary
-4. **Synthesize** a technical report
-5. **Update** memory with new faults
+### 3. Custom Query Mode (Option 2)
+
+Ask specific questions about your data using the RAG pipeline:
+
+```
+[Query] Enter your inquiry: Why did the system shutdown at 15:45?
+
+[*] Processing inquiry...
+[DEBUG] Database has 62 records
+[DEBUG] Searching for: 'shutdown'
+[DEBUG] Found 5 matches
+
+📋 QUERY RESPONSE
+═══════════════════════════════════════════════════════════════════════════
+The system shutdown at 15:45:22 was triggered by a cascading sequence of events.
+An initial voltage anomaly at 15:43:15 caused the shifter power rail to drop 
+below 3000mV. This triggered thermal stress on the power conditioning unit, 
+resulting in a high-temperature alert at 15:44:50. The system's automatic 
+failsafe protocol then initiated a controlled shutdown sequence.
+═══════════════════════════════════════════════════════════════════════════
+```
+
+---
+
+## 🔍 Post-Analysis Menu
+
+After the automatic summary is generated, you have access to:
+
+```
+🔧 POST-ANALYSIS OPTIONS
+─────────────────────────────────────────────────────────────
+1. View Error Code Details & Severity
+2. Ask Custom Query (RAG Mode)
+3. Display Database Stats
+4. Generate New Summary
+5. Exit Program
+─────────────────────────────────────────────────────────────
+```
+
+| Option | Purpose | Use Case |
+|--------|---------|----------|
+| 1 | Technical details for each error code | Understanding what went wrong |
+| 2 | RAG-powered Q&A about your data | Deep investigation of specific events |
+| 3 | Database statistics | Quick overview of data volume |
+| 4 | Regenerate summary | See new insights or verify previous analysis |
+| 5 | Exit cleanly | End session and save memory state |
 
 ---
 
@@ -310,9 +368,16 @@ ollama list
 ### Error: "No logs available in database"
 
 **Solution:**
-- Load telemetry data first (Option 1 or 2)
+- Load telemetry data first (Option 1 or 2 in input menu)
 - Verify JSON format is correct (use Option 3)
 - Check database stats (Option 5)
+
+### Summary generation takes too long
+
+**Solution:**
+- Reduce dataset size (LLM processes all records)
+- Increase Ollama timeout (currently 300s)
+- Check if Ollama is running properly
 
 ### Database Corruption or Reset
 
@@ -325,37 +390,6 @@ rm radar_continuum_memory.json
 python Rag_Models.ipynb
 ```
 
-### Out of Memory (OOM) Errors
-
-**Solution:** Reduce the retrieval limit in the code:
-```python
-# Change from 10 to 3
-all_data.head(3)  # Instead of head(10)
-```
-
----
-
-## 📊 Key Components
-
-### 1. **LanceDB Vector Database**
-- Stores radar telemetry logs with 384-dim embeddings
-- Auto-creates `local_radar_db/` directory
-- Schema: `RadarLogSchema` (id, timestamp, radar_id, coordinates, error_code, log_message, vector)
-
-### 2. **Ollama + Qwen LLM**
-- Local language model running on port 11434
-- Temperature: 0.0 (deterministic for factual output)
-- Timeout: 120 seconds
-
-### 3. **Embedding Model**
-- **BAAI/bge-small-en-v1.5** (auto-downloaded, ~130MB)
-- Generates 384-dimensional vectors for semantic search
-
-### 4. **Continuum Memory**
-- JSON file: `radar_continuum_memory.json`
-- Persists: fault history, active anomalies, last processed timestamp
-- Survives system restarts
-
 ---
 
 ## 📈 Performance Metrics
@@ -364,8 +398,9 @@ all_data.head(3)  # Instead of head(10)
 |--------|-------|
 | Embedding Generation | ~50ms per query |
 | Database Query | ~10ms (pandas filtering) |
-| LLM Response Time | ~5-10 seconds (7B model) |
-| Total Pipeline Time | ~15-20 seconds |
+| LLM Summary Generation | ~10-20 seconds (7B model) |
+| LLM Query Response | ~5-10 seconds |
+| Total Pipeline Time | ~15-30 seconds |
 | Database Size | ~100MB for 1K records |
 
 ---
@@ -377,15 +412,20 @@ all_data.head(3)  # Instead of head(10)
    - Or prepare JSON file (Option 2)
    - View format with Option 3
 
-2. **Deploy as API**
+2. **Explore Your Data**
+   - Generate automatic summary
+   - View error code details
+   - Ask custom questions
+
+3. **Deploy as API** (Future)
    - Wrap the pipeline in Flask/FastAPI
    - Expose endpoints for querying
 
-3. **Scale Database**
+4. **Scale Database** (Future)
    - Use production LanceDB setup
    - Add advanced indexing
 
-4. **Integrate with Monitoring**
+5. **Integrate with Monitoring** (Future)
    - Connect to live radar systems
    - Stream telemetry data in real-time
 
@@ -427,4 +467,4 @@ This project is for educational and research purposes.
 
 **Last Updated:** 24 May 2026
 **Status:** ✅ Production Ready
-**Version:** 2.0 (User Input Mode)
+**Version:** 3.0 (Automatic Summary Mode)

@@ -1,5 +1,16 @@
 {
   "last_processed_timestamp": "1970-01-01 00:00:00",
-  "known_critical_faults": [],
-  "active_anomalies": {}
+  "known_critical_faults": [
+    "ERR_403_UNDERVOLT",
+    "ERR_701_MOTOR_FAULT",
+    "ERR_501_ALIGN_FAIL",
+    "ERR_601_THERMAL_HIGH",
+    "6",
+    "ERR_801_COMMS_LOSS",
+    "ERR_999_UNKNOWN"
+  ],
+  "active_anomalies": {
+    "AN-FPS-117_A": "Last fault tracked: ERR_999_UNKNOWN",
+    "": "Last fault tracked: 6"
+  }
 }

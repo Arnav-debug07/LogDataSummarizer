@@ -1,0 +1,202 @@
+[
+    {
+      "id": "AN-FPS-117_A_2026-05-24_08-00-00",
+      "timestamp": "2026-05-24 08:00:00",
+      "radar_id": "AN-FPS-117_A",
+      "azimuth": 42.5,
+      "elevation": 11.8,
+      "voltage_mv": 5010,
+      "error_code": "OK",
+      "log_message": "Radar initialized successfully. Sweep calibration nominal."
+    },
+    {
+      "id": "AN-FPS-117_A_2026-05-24_08-05-11",
+      "timestamp": "2026-05-24 08:05:11",
+      "radar_id": "AN-FPS-117_A",
+      "azimuth": 47.1,
+      "elevation": 12.0,
+      "voltage_mv": 4975,
+      "error_code": "OK",
+      "log_message": "Normal sweep operations. Thermal profile stable."
+    },
+    {
+      "id": "AN-FPS-117_A_2026-05-24_08-11-42",
+      "timestamp": "2026-05-24 08:11:42",
+      "radar_id": "AN-FPS-117_A",
+      "azimuth": 51.3,
+      "elevation": 12.4,
+      "voltage_mv": 4620,
+      "error_code": "ERR_403_UNDERVOLT",
+      "log_message": "Power rail fluctuation detected. Voltage dipping below nominal threshold."
+    },
+    {
+      "id": "AN-FPS-117_A_2026-05-24_08-13-09",
+      "timestamp": "2026-05-24 08:13:09",
+      "radar_id": "AN-FPS-117_A",
+      "azimuth": 55.8,
+      "elevation": 12.1,
+      "voltage_mv": 4210,
+      "error_code": "ERR_403_UNDERVOLT",
+      "log_message": "Critical undervoltage condition detected. Backup capacitors engaged."
+    },
+    {
+      "id": "AN-FPS-117_A_2026-05-24_08-14-55",
+      "timestamp": "2026-05-24 08:14:55",
+      "radar_id": "AN-FPS-117_A",
+      "azimuth": 57.0,
+      "elevation": 11.6,
+      "voltage_mv": 3980,
+      "error_code": "ERR_701_MOTOR_FAULT",
+      "log_message": "Antenna rotation instability detected. Sweep motor torque inconsistent."
+    },
+    {
+      "id": "AN-FPS-117_A_2026-05-24_08-17-20",
+      "timestamp": "2026-05-24 08:17:20",
+      "radar_id": "AN-FPS-117_A",
+      "azimuth": 59.4,
+      "elevation": 10.9,
+      "voltage_mv": 3895,
+      "error_code": "ERR_501_ALIGN_FAIL",
+      "log_message": "Mechanical alignment drift exceeded acceptable tolerance by 3.8 degrees."
+    },
+    {
+      "id": "AN-FPS-117_A_2026-05-24_08-20-02",
+      "timestamp": "2026-05-24 08:20:02",
+      "radar_id": "AN-FPS-117_A",
+      "azimuth": 60.2,
+      "elevation": 10.1,
+      "voltage_mv": 3810,
+      "error_code": "ERR_601_THERMAL_HIGH",
+      "log_message": "Waveguide chamber temperature exceeded 88C. Cooling response delayed."
+    },
+    {
+      "id": "AN-FPS-117_A_2026-05-24_08-22-47",
+      "timestamp": "2026-05-24 08:22:47",
+      "radar_id": "AN-FPS-117_A",
+      "azimuth": 61.7,
+      "elevation": 9.4,
+      "voltage_mv": 3755,
+      "error_code": "ERR_601_THERMAL_HIGH",
+      "log_message": "Thermal escalation continuing. Internal heat sink efficiency degraded."
+    },
+    {
+      "id": "AN-FPS-117_A_2026-05-24_08-25-14",
+      "timestamp": "2026-05-24 08:25:14",
+      "radar_id": "AN-FPS-117_A",
+      "azimuth": 63.1,
+      "elevation": 8.9,
+      "voltage_mv": 3690,
+      "error_code": "ERR_801_COMMS_LOSS",
+      "log_message": "Intermittent uplink communication loss with command subsystem."
+    },
+    {
+      "id": "AN-FPS-117_A_2026-05-24_08-26-31",
+      "timestamp": "2026-05-24 08:26:31",
+      "radar_id": "AN-FPS-117_A",
+      "azimuth": 63.8,
+      "elevation": 8.7,
+      "voltage_mv": 3610,
+      "error_code": "ERR_801_COMMS_LOSS",
+      "log_message": "Primary telemetry channel offline. Failover relay partially responsive."
+    },
+    {
+      "id": "AN-FPS-117_A_2026-05-24_08-28-03",
+      "timestamp": "2026-05-24 08:28:03",
+      "radar_id": "AN-FPS-117_A",
+      "azimuth": 64.0,
+      "elevation": 8.5,
+      "voltage_mv": 3520,
+      "error_code": "ERR_999_UNKNOWN",
+      "log_message": "Unexpected synchronization fault detected between targeting and sweep modules."
+    },
+    {
+      "id": "AN-FPS-117_A_2026-05-24_08-29-49",
+      "timestamp": "2026-05-24 08:29:49",
+      "radar_id": "AN-FPS-117_A",
+      "azimuth": 64.2,
+      "elevation": 8.4,
+      "voltage_mv": 3475,
+      "error_code": "ERR_403_UNDERVOLT",
+      "log_message": "Power instability worsening. Safe mode threshold approaching."
+    },
+    {
+      "id": "AN-FPS-117_A_2026-05-24_08-31-12",
+      "timestamp": "2026-05-24 08:31:12",
+      "radar_id": "AN-FPS-117_A",
+      "azimuth": 64.3,
+      "elevation": 8.3,
+      "voltage_mv": 3400,
+      "error_code": "ERR_601_THERMAL_HIGH",
+      "log_message": "Thermal containment failure imminent. Internal coolant circulation unstable."
+    },
+    {
+      "id": "AN-FPS-117_A_2026-05-24_08-32-58",
+      "timestamp": "2026-05-24 08:32:58",
+      "radar_id": "AN-FPS-117_A",
+      "azimuth": 64.3,
+      "elevation": 8.3,
+      "voltage_mv": 3320,
+      "error_code": "ERR_801_COMMS_LOSS",
+      "log_message": "Complete loss of command uplink. Autonomous protection routines engaged."
+    },
+    {
+      "id": "AN-FPS-117_A_2026-05-24_08-34-26",
+      "timestamp": "2026-05-24 08:34:26",
+      "radar_id": "AN-FPS-117_A",
+      "elevation": 8.1,
+      "azimuth": 64.5,
+      "voltage_mv": 3250,
+      "error_code": "ERR_999_UNKNOWN",
+      "log_message": "Radar entered protective safe mode following cascading subsystem instability."
+    },
+    {
+      "id": "AN-FPS-117_B_2026-05-24_09-10-00",
+      "timestamp": "2026-05-24 09:10:00",
+      "radar_id": "AN-FPS-117_B",
+      "azimuth": 102.4,
+      "elevation": 14.0,
+      "voltage_mv": 5035,
+      "error_code": "OK",
+      "log_message": "Secondary radar operating within standard tolerances."
+    },
+    {
+      "id": "AN-FPS-117_B_2026-05-24_09-14-33",
+      "timestamp": "2026-05-24 09:14:33",
+      "radar_id": "AN-FPS-117_B",
+      "azimuth": 105.8,
+      "elevation": 13.7,
+      "voltage_mv": 5002,
+      "error_code": "ERR_501_ALIGN_FAIL",
+      "log_message": "Minor alignment inconsistency detected during high-speed sweep transition."
+    },
+    {
+      "id": "AN-FPS-117_B_2026-05-24_09-16-12",
+      "timestamp": "2026-05-24 09:16:12",
+      "radar_id": "AN-FPS-117_B",
+      "azimuth": 106.2,
+      "elevation": 13.6,
+      "voltage_mv": 4990,
+      "error_code": "OK",
+      "log_message": "Alignment recalibration successful. No persistent drift observed."
+    },
+    {
+      "id": "AN-FPS-117_C_2026-05-24_10-02-05",
+      "timestamp": "2026-05-24 10:02:05",
+      "radar_id": "AN-FPS-117_C",
+      "azimuth": 210.7,
+      "elevation": 6.5,
+      "voltage_mv": 5100,
+      "error_code": "ERR_701_MOTOR_FAULT",
+      "log_message": "Bearing friction increasing in rotational assembly. Predictive maintenance recommended."
+    },
+    {
+      "id": "AN-FPS-117_C_2026-05-24_10-05-41",
+      "timestamp": "2026-05-24 10:05:41",
+      "radar_id": "AN-FPS-117_C",
+      "azimuth": 211.3,
+      "elevation": 6.4,
+      "voltage_mv": 5088,
+      "error_code": "ERR_701_MOTOR_FAULT",
+      "log_message": "Motor vibration signature exceeds baseline by 27 percent."
+    }
+  ]

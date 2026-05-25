@@ -10,7 +10,7 @@
     "ERR_999_UNKNOWN"
   ],
   "active_anomalies": {
-    "AN-FPS-117_A": "Last fault tracked: ERR_999_UNKNOWN",
+    "AN-FPS-117_A": "Last fault tracked: ERR_601_THERMAL_HIGH",
     "": "Last fault tracked: 6"
   }
 }

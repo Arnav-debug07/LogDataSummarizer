@@ -1,0 +1,228 @@
+                    ┌─────────────────────────────────────────┐
+                    │   🛰️ OFFLINE RADAR TELEMETRY ANALYZER   │
+                    │  Retrieval-Augmented Generation (RAG)   │
+                    └────────────────┬────────────────────────┘
+                                     │
+                                     ▼
+                    ┌─────────────────────────────────────────┐
+                    │   [✔] Continuum Memory Initialized      │
+                    │   (radar_continuum_memory.json)         │
+                    └────────────────┬────────────────────────┘
+                                     │
+                    ╔════════════════════════════════════════╗
+                    ║    📥 DATA INPUT OPTIONS MENU          ║
+                    ║  (Select option 1-6 to continue)       ║
+                    ╚════════════════╤═══════════════════════╝
+                                     │
+             ┌───────┬──────────┬────┴──────┬──────────┬──────────┐
+             │       │          │           │          │          │
+             ▼       ▼          ▼           ▼          ▼          ▼
+         ┌──────┐ ┌──────┐ ┌──────┐ ┌──────────────┐ ┌────────┐ ┌──────┐
+         │ (1)  │ │ (2)  │ │ (3)  │ │     (4)      │ │ (5)    │ │ (6)  │
+         └──────┘ └──────┘ └──────┘ └──────────────┘ └────────┘ └──────┘
+            │        │        │           │            │         │
+            │        │        │           │            │         │
+            ▼        ▼        ▼           ▼            ▼         ▼
+      ┌──────────────────────────────────────────────────────┐  ┌─────────┐
+      │  INTERACTIVE  │ JSON FILE │ VIEW INPUT │ DATABASE   │  │  EXIT   │
+      │  INPUT MODE   │ INPUT MODE│ FORMAT      │ STATS      │  │ PROGRAM │
+      │               │           │             │            │  │         │
+      │ Enter records │ Load JSON │ Display     │ Show:      │  │ sys.exit│
+      │ one by one    │ file path │ - Field     │ - Records  │  │ (0)     │
+      │               │           │   specs    │ - Units    │  │         │
+      │ Type 'done'   │ Handle    │ - Error    │ - Codes    │  └─────────┘
+      │ to finish     │ both dict │   codes    │ - Time     │
+      │               │ & lists   │            │   range    │
+      │               │           │            │            │
+      │               └─┬─────────┘            │            │
+      │                 │                      │            │
+      └─────────────────┼──────────────────────┴────────────┘
+                        │
+                        │ [✔] Data Added Successfully
+                        │
+                        ▼
+        ┌────────────────────────────────────────┐
+        │  📊 DATABASE STATS DISPLAYED            │
+        │  - Total Records                       │
+        │  - Radar Units                         │
+        │  - Error Codes                         │
+        │  - Time Range                          │
+        └────────────────┬───────────────────────┘
+                         │
+                         │ Return to Data Input Menu Loop
+                         │ OR
+                         │ Select Option (4) → Skip Input & Analyze
+                         │
+                         ▼
+        ┌────────────────────────────────────────────┐
+        │  ⚠️ DATABASE EMPTY CHECK                   │
+        │                                            │
+        │  if database.empty:                        │
+        │  ├─ Print warning                          │
+        │  ├─ Prompt to load data (Option 1 or 2)   │
+        │  └─ Return to Data Input Menu              │
+        │  else:                                     │
+        │  └─ Proceed to Analysis Mode               │
+        └────────────────┬───────────────────────────┘
+                         │
+                         ▼ (data_loaded = True)
+        ╔═══════════════════════════════════════════════════╗
+        ║           📊 ANALYSIS MODE (MAIN)                ║
+        ║  [*] Generating human-readable summary...        ║
+        ║  [*] This may take 10-30 seconds...              ║
+        ╚═══════════════════════════════════════════════════╝
+                         │
+                         ▼
+        ┌──────────────────────────────────────────┐
+        │  generate_human_readable_summary()       │
+        │                                          │
+        │  1. Load all telemetry data              │
+        │  2. Calculate statistics:                │
+        │     - Total records                      │
+        │     - Time range                         │
+        │     - Voltage (min/max/avg)              │
+        │     - Unique radar units                 │
+        │     - Error code distribution            │
+        │  3. Prepare LLM prompt with stats        │
+        │  4. Call Qwen model (via Ollama)         │
+        │  5. Return formatted summary             │
+        └────────────────┬─────────────────────────┘
+                         │
+                         ▼
+        ┌──────────────────────────────────────────┐
+        │  📋 TELEMETRY SUMMARY DISPLAYED          │
+        │                                          │
+        │  Output:                                 │
+        │  - Overall system status                 │
+        │  - Key events & anomalies                │
+        │  - Performance metrics                   │
+        │  - Critical issues highlighted           │
+        └────────────────┬─────────────────────────┘
+                         │
+                         ▼
+        ┌──────────────────────────────────────────┐
+        │  Update Memory with Discovered Faults    │
+        │                                          │
+        │  for each error_code in database:        │
+        │  ├─ if error_code != "OK":               │
+        │  └─ memory.update_state(code, radar_id)  │
+        └────────────────┬─────────────────────────┘
+                         │
+        ╔════════════════════════════════════════╗
+        ║   🔧 POST-ANALYSIS OPTIONS MENU        ║
+        ║  (Select option 1-5 to continue)       ║
+        ╚════════════════╤═══════════════════════╝
+                         │
+         ┌───────┬───────┼────────┬──────────┬──────────┐
+         │       │       │        │          │          │
+         ▼       ▼       ▼        ▼          ▼          ▼
+     ┌──────┐ ┌──────┐ ┌──────┐ ┌────────┐ ┌────────┐ ┌──────┐
+     │ (1)  │ │ (2)  │ │ (3)  │ │ (4)    │ │ (5)    │
+     └──────┘ └──────┘ └──────┘ └────────┘ └────────┘
+        │        │        │        │         │
+        │        │        │        │         │
+        ▼        ▼        ▼        ▼         ▼
+    ┌──────────────────────────────────────────┐  ┌─────────┐
+    │  ERROR CODE │ CUSTOM │ DATABASE │ NEW    │  │  EXIT   │
+    │  DETAILS    │ QUERY  │ STATS    │ SUMMARY│  │ PROGRAM │
+    │             │ (RAG)  │          │        │  │         │
+    │ For each    │        │ Show:    │ Regen- │  │ sys.exit│
+    │ error code: │        │ - Records│ erate  │  │ (0)     │
+    │ ├─ Name     │        │ - Units  │ summary│  │         │
+    │ ├─ Severity │        │ - Codes  │ using  │  │         │
+    │ ├─ Desc     │        │ - Range  │ LLM    │  │         │
+    │ └─ Action   │        │          │        │  │         │
+    └──────────────────────────────────────────┘  └─────────┘
+        │             │          │        │         │
+        │             │          │        │         │
+        └─────┬───────┘          │        │         │
+              │ Return to        │        │         │
+              │ Post-Analysis    │        │         │
+              │ Menu             │        │         │
+              │                  │        │         │
+              └──────────────────┼────────┴─────────┘
+                                 │
+                   ┌─────────────┘│└──────────────┐
+                   │              │               │
+                   ▼              ▼               ▼
+         ┌───────────────────┐  │  ┌───────────────────────┐
+         │ Return to Menu    │  │  │ Return to Menu        │
+         │ (Loop continues)  │  │  │ (Loop continues)      │
+         └───────────────────┘  │  └───────────────────────┘
+                                 │
+                    ╔═══════════════════════════════════╗
+                    ║   ❓ CUSTOM QUERY MODE (OPTION 2) ║
+                    ║  (Sub-menu - Optional)             ║
+                    ╚═══════════════════════════════════╝
+                                 │
+                                 ▼
+                    ┌──────────────────────────────────┐
+                    │  Ask questions about radar data  │
+                    │  Type 'back' to exit query mode  │
+                    └────────────┬─────────────────────┘
+                                 │
+                    ┌────────────────────────────────┐
+                    │  User enters inquiry            │
+                    │                                │
+                    │  Examples:                     │
+                    │  - "voltage error"            │
+                    │  - "why shutdown?"            │
+                    │  - "thermal issues"           │
+                    └────────────┬───────────────────┘
+                                 │
+                                 ▼
+                    ┌──────────────────────────────────┐
+                    │  process_radar_inquiry()         │
+                    │                                  │
+                    │  Stage 1: RETRIEVAL              │
+                    │  ├─ Search across all fields    │
+                    │  ├─ Match: log_message          │
+                    │  ├─ Match: error_code           │
+                    │  └─ Match: radar_id             │
+                    │                                  │
+                    │  Stage 2: EVALUATION             │
+                    │  ├─ LLM analyzes results        │
+                    │  ├─ Decide: more data needed?   │
+                    │  └─ Return: yes/no + new query  │
+                    │                                  │
+                    │  Stage 3: REFINEMENT             │
+                    │  ├─ If yes → execute refined    │
+                    │  │           query               │
+                    │  └─ Combine all results          │
+                    │                                  │
+                    │  Stage 4: SYNTHESIS              │
+                    │  ├─ LLM generates report        │
+                    │  └─ Include recommendations     │
+                    │                                  │
+                    │  Stage 5: MEMORY UPDATE          │
+                    │  ├─ Extract new faults          │
+                    │  └─ Persist to JSON             │
+                    └────────────┬───────────────────┘
+                                 │
+                                 ▼
+                    ┌──────────────────────────────────┐
+                    │  📋 QUERY RESPONSE DISPLAYED     │
+                    │                                  │
+                    │  Output:                         │
+                    │  - Technical analysis           │
+                    │  - Root cause analysis          │
+                    │  - Recommendations              │
+                    │  - Next steps                    │
+                    └────────────┬───────────────────┘
+                                 │
+                    ┌────────────────────────────────┐
+                    │  User can ask another query     │
+                    │  OR type 'back' to exit         │
+                    │                                │
+                    │  if input == "back":           │
+                    │  └─ Return to Post-Analysis    │
+                    │     Menu                       │
+                    │  else:                         │
+                    │  └─ Loop to next inquiry       │
+                    └────────────┬───────────────────┘
+                                 │
+                                 ▼
+                    ┌──────────────────────────────────┐
+                    │  Return to Post-Analysis Menu    │
+                    │  (Main loop continues)           │
+                    └──────────────────────────────────┘

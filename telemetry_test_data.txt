@@ -1,0 +1,104 @@
+# ---------------------------------------------------------------
+# Synthetic Radar Telemetry Log — Native Format
+# Format: time: HH:MM:SS <message>
+# Session covers two radar tracks (AR001, AR002) across a full
+# operational cycle with multiple fault injections for testing.
+# ---------------------------------------------------------------
+
+# === SYSTEM STARTUP ===
+time: 08:30:30 transmitter switched on
+time: 08:30:38 transmitter put to low power and initialization success
+time: 08:30:40 Track AR001 put to WTM
+time: 08:30:45 transmitter freq is 10 code1 20 and code 30
+time: 08:30:56 transmitter put to high power
+
+# === AR001 NORMAL TRACKING — PHASE 1 ===
+time: 08:31:20 CTN-AR001, Target id 17,lat 11.18,lon 77.22
+time: 08:31:25 CTN-AR001, Target id 17,lat 11.20,lon 77.25
+time: 08:31:50 CTN-AR001, Target id 17,lat 11.24,lon 77.30
+time: 08:32:05 CTN-AR001, Target id 17,lat 11.28,lon 77.35
+time: 08:32:20 CTN-AR001, Target id 17,lat 11.30,lon 77.40
+time: 08:32:30 CTN-AR001, Target id 17,lat 11.32,lon 77.45
+time: 08:32:37 CTN-AR001, Target id 17,lat 11.34,lon 77.55
+time: 08:32:39 CTN-AR001, Target id 17,lat 11.38,lon 78.25
+time: 08:32:40 CTN-AR001, Target id 17,lat 11.42,lon 78.35
+time: 08:32:48 CTN-AR001, Target id 17,lat 11.46,lon 78.45
+time: 08:32:50 CTN-AR001, Target id 17,lat 11.50,lon 78.55
+time: 08:32:58 CTN-AR001, Target id 17,lat 11.53,lon 79.15
+time: 08:33:20 CTN-AR001, Target id 17,lat 11.55,lon 79.22
+time: 08:33:50 CTN-AR001, Target id 17,lat 11.57,lon 79.29
+time: 08:33:59 CTN-AR001, Target id 17,lat 12.20,lon 79.40
+
+# === FAULT 1: VOLTAGE DROP ON POWER BUS ===
+time: 08:34:10 power supply low voltage detected on main bus — undervolt condition active
+time: 08:34:15 CTN-AR001, Target id 17,lat 12.25,lon 79.45
+time: 08:34:20 backup regulator engaged — voltage recovering
+time: 08:34:30 CTN-AR001, Target id 17,lat 12.28,lon 79.47
+time: 08:34:40 CTN-AR001, Target id 17,lat 12.30,lon 79.49
+time: 08:34:50 CTN-AR001, Target id 17,lat 12.36,lon 79.51
+time: 08:34:56 CTN-AR001, Target id 17,lat 12.40,lon 79.55
+
+# === AR001 NORMAL TRACKING — PHASE 2 ===
+time: 08:35:25 CTN-AR001, Target id 17,lat 12.45,lon 79.58
+time: 08:35:30 CTN-AR001, Target id 17,lat 12.50,lon 79.60
+time: 08:35:35 CTN-AR001, Target id 17,lat 12.55,lon 80.12
+time: 08:35:40 CTN-AR001, Target id 17,lat 13.10,lon 80.18
+time: 08:35:45 CTN-AR001, Target id 17,lat 13.20,lon 80.22
+time: 08:35:50 CTN-AR001, Target id 17,lat 13.30,lon 80.28
+time: 08:35:54 CTN-AR001, Target id 17,lat 13.40,lon 80.33
+time: 08:35:55 CTN-AR001, Target id 17,lat 13.50,lon 80.36
+time: 08:35:59 CTN-AR001, Target id 17,lat 13.58,lon 80.39
+
+# === FAULT 2: ALIGNMENT FAILURE ON AR001 ===
+time: 08:36:05 gimbal fault detected on AR001 — alignment fail, encoder feedback inconsistent
+time: 08:36:10 auto-realignment sequence triggered on AR001
+
+# === AR002 ACTIVATED ===
+time: 08:36:15 Track AR002 put to WTM
+time: 08:36:20 CTN-AR002, Target id 22,lat 10.50,lon 76.30
+time: 08:36:25 CTN-AR002, Target id 22,lat 10.55,lon 76.38
+time: 08:36:30 CTN-AR001, Target id 17,lat 14.33,lon 80.43
+time: 08:36:35 CTN-AR002, Target id 22,lat 10.60,lon 76.45
+time: 08:36:39 CTN-AR001, Target id 17,lat 14.39,lon 80.45
+time: 08:36:40 CTN-AR001, Target id 17,lat 14.40,lon 80.49
+time: 08:36:45 CTN-AR001, Target id 17,lat 14.43,lon 80.50
+time: 08:36:49 CTN-AR001, Target id 17,lat 14.50,lon 80.55
+time: 08:36:50 CTN-AR001, Target id 17,lat 14.57,lon 80.59
+time: 08:36:55 CTN-AR002, Target id 22,lat 10.65,lon 76.52
+time: 08:36:58 CTN-AR001, Target id 17,lat 15.22,lon 81.22
+
+# === FAULT 3: THERMAL HIGH ===
+time: 08:37:05 thermal alarm — transmitter chassis temperature high, cooling system overloaded
+time: 08:37:10 CTN-AR001, Target id 17,lat 15.30,lon 81.25
+time: 08:37:15 CTN-AR002, Target id 22,lat 10.70,lon 76.58
+time: 08:37:20 CTN-AR001, Target id 17,lat 15.33,lon 81.29
+time: 08:37:25 transmitter power reduced to 60 percent to lower thermal load
+time: 08:37:30 CTN-AR001, Target id 17,lat 15.37,lon 81.30
+time: 08:37:35 CTN-AR002, Target id 22,lat 10.75,lon 76.65
+time: 08:37:40 temperature stabilising — monitoring thermal trend
+time: 08:37:55 CTN-AR001, Target id 17,lat 15.39,lon 81.45
+time: 08:37:59 CTN-AR001, Target id 17,lat 15.44,lon 81.49
+time: 08:38:05 CTN-AR002, Target id 22,lat 10.80,lon 76.70
+
+# === FAULT 4: COMMUNICATION LOSS ===
+time: 08:38:10 comms loss — link lost to primary control station, heartbeat timeout
+time: 08:38:15 CTN-AR001, Target id 17,lat 15.49,lon 81.50
+time: 08:38:20 secondary comms channel attempting reconnect
+time: 08:38:30 CTN-AR001, Target id 17,lat 15.50,lon 81.58
+time: 08:38:35 Track AR002 put to WTM
+time: 08:38:40 CTN-AR001, Target id 17,lat 15.58,lon 82.35
+time: 08:38:42 communication link restored via backup relay
+time: 08:38:45 CTN-AR001, Target id 17,lat 16.30,lon 82.39
+time: 08:38:50 CTN-AR002, Target id 22,lat 10.90,lon 76.80
+time: 08:38:59 CTN-AR001, Target id 17,lat 16.40,lon 82.45
+
+# === FAULT 5: MOTOR FAULT ON AR002 ===
+time: 08:39:10 motor fault on AR002 — azimuth drive motor bearing vibration abnormal at 220 Hz
+time: 08:39:15 AR002 drive motor entering safe-speed mode, slew rate limited
+
+# === FAULT 6: FREQUENCY CONFIGURATION ERROR ===
+time: 08:39:18 frequency error — waveform code configuration mismatch detected on transmitter
+
+# === SHUTDOWN SEQUENCE ===
+time: 08:39:20 transmitter put to low power
+time: 08:39:48 transmitter power off

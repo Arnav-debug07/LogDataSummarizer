@@ -1,4 +1,4 @@
-                    ┌─────────────────────────────────────────┐
+┌─────────────────────────────────────────┐
                     │   🛰️ OFFLINE RADAR TELEMETRY ANALYZER   │
                     │  Retrieval-Augmented Generation (RAG)   │
                     └────────────────┬────────────────────────┘
@@ -24,23 +24,23 @@
             │        │        │           │            │         │
             ▼        ▼        ▼           ▼            ▼         ▼
       ┌──────────────────────────────────────────────────────┐  ┌─────────┐
-      │  INTERACTIVE  │ JSON FILE │ VIEW INPUT │ DATABASE   │  │  EXIT   │
-      │  INPUT MODE   │ INPUT MODE│ FORMAT      │ STATS      │  │ PROGRAM │
-      │               │           │             │            │  │         │
-      │ Enter records │ Load JSON │ Display     │ Show:      │  │ sys.exit│
-      │ one by one    │ file path │ - Field     │ - Records  │  │ (0)     │
-      │               │           │   specs    │ - Units    │  │         │
-      │ Type 'done'   │ Handle    │ - Error    │ - Codes    │  └─────────┘
-      │ to finish     │ both dict │   codes    │ - Time     │
-      │               │ & lists   │            │   range    │
-      │               │           │            │            │
-      │               └─┬─────────┘            │            │
-      │                 │                      │            │
-      └─────────────────┼──────────────────────┴────────────┘
-                        │
-                        │ [✔] Data Added Successfully
-                        │
-                        ▼
+      │  TEXT FILE  │ JSON FILE │ VIEW INPUT │  BRIEF        │  │  EXIT   │
+      │  INPUT MODE │ INPUT MODE│ FORMAT     │  SUMMARY &    │  │ PROGRAM │
+      │             │           │            │  ANALYZE      │  │         │
+      │ Parse pipe- │ Load JSON │ Display    │  DATA         │  │ sys.exit│
+      │ separated   │ file path │ - Field    │               │  │ (0)     │
+      │ .txt file   │           │   specs    │  (see flow    │  │         │
+      │             │ Handle    │ - Error    │   below)      │  └─────────┘
+      │ Skip blank  │ both dict │   codes    │               │
+      │ & # lines   │ & lists   │            │               │
+      │             │           │            │               │
+      │             └─┬─────────┘            │               │
+      │               │                      │               │
+      └───────────────┼──────────────────────┴───────────────┘
+                      │
+                      │ [✔] Data Added Successfully
+                      │
+                      ▼
         ┌────────────────────────────────────────┐
         │  📊 DATABASE STATS DISPLAYED            │
         │  - Total Records                       │
@@ -51,7 +51,7 @@
                          │
                          │ Return to Data Input Menu Loop
                          │ OR
-                         │ Select Option (4) → Skip Input & Analyze
+                         │ Select Option (4) → Brief Summary & Analyze
                          │
                          ▼
         ┌────────────────────────────────────────────┐
@@ -62,41 +62,54 @@
         │  ├─ Prompt to load data (Option 1 or 2)   │
         │  └─ Return to Data Input Menu              │
         │  else:                                     │
-        │  └─ Proceed to Analysis Mode               │
+        │  └─ Proceed to Brief Summary               │
         └────────────────┬───────────────────────────┘
                          │
                          ▼ (data_loaded = True)
         ╔═══════════════════════════════════════════════════╗
-        ║           📊 ANALYSIS MODE (MAIN)                ║
-        ║  [*] Generating human-readable summary...        ║
+        ║     📋 BRIEF EVENT SUMMARY (DEFAULT VIEW)        ║
+        ║  [*] Generating brief event summary...           ║
         ║  [*] This may take 10-30 seconds...              ║
         ╚═══════════════════════════════════════════════════╝
                          │
                          ▼
         ┌──────────────────────────────────────────┐
-        │  generate_human_readable_summary()       │
+        │  generate_brief_event_summary()          │
         │                                          │
         │  1. Load all telemetry data              │
-        │  2. Calculate statistics:                │
-        │     - Total records                      │
-        │     - Time range                         │
-        │     - Voltage (min/max/avg)              │
-        │     - Unique radar units                 │
-        │     - Error code distribution            │
-        │  3. Prepare LLM prompt with stats        │
-        │  4. Call Qwen model (via Ollama)         │
-        │  5. Return formatted summary             │
+        │  2. Sort by timestamp (ascending)        │
+        │  3. Build event list:                    │
+        │     - timestamp                          │
+        │     - radar_id                           │
+        │     - error_code                         │
+        │     - log_message                        │
+        │  4. LLM narrates as plain paragraph      │
+        │  5. Fallback: build paragraph manually   │
         └────────────────┬─────────────────────────┘
                          │
                          ▼
         ┌──────────────────────────────────────────┐
-        │  📋 TELEMETRY SUMMARY DISPLAYED          │
+        │  📋 EVENT SUMMARY DISPLAYED              │
         │                                          │
         │  Output:                                 │
-        │  - Overall system status                 │
-        │  - Key events & anomalies                │
-        │  - Performance metrics                   │
-        │  - Critical issues highlighted           │
+        │  - Single paragraph, no bullet points    │
+        │  - Each event with its timestamp         │
+        │  - Plain English, no jargon              │
+        └────────────────┬─────────────────────────┘
+                         │
+                         ▼
+        ┌──────────────────────────────────────────┐
+        │  [?] View detailed analysis summary?     │
+        │      (y/n prompt)                        │
+        │                                          │
+        │  if "y":                                 │
+        │  └─ generate_human_readable_summary()    │
+        │     ├─ Calculate full statistics         │
+        │     ├─ Identify anomalies & patterns     │
+        │     └─ Display detailed report           │
+        │                                          │
+        │  if "n":                                 │
+        │  └─ Skip to Post-Analysis Menu           │
         └────────────────┬─────────────────────────┘
                          │
                          ▼
@@ -116,7 +129,7 @@
          ┌───────┬───────┼────────┬──────────┬──────────┐
          │       │       │        │          │          │
          ▼       ▼       ▼        ▼          ▼          ▼
-     ┌──────┐ ┌──────┐ ┌──────┐ ┌────────┐ ┌────────┐ ┌──────┐
+     ┌──────┐ ┌──────┐ ┌──────┐ ┌────────┐ ┌────────┐
      │ (1)  │ │ (2)  │ │ (3)  │ │ (4)    │ │ (5)    │
      └──────┘ └──────┘ └──────┘ └────────┘ └────────┘
         │        │        │        │         │
@@ -128,10 +141,10 @@
     │             │ (RAG)  │          │        │  │         │
     │ For each    │        │ Show:    │ Regen- │  │ sys.exit│
     │ error code: │        │ - Records│ erate  │  │ (0)     │
-    │ ├─ Name     │        │ - Units  │ summary│  │         │
-    │ ├─ Severity │        │ - Codes  │ using  │  │         │
-    │ ├─ Desc     │        │ - Range  │ LLM    │  │         │
-    │ └─ Action   │        │          │        │  │         │
+    │ ├─ Name     │        │ - Units  │ detail │  │         │
+    │ ├─ Severity │        │ - Codes  │ summary│  │         │
+    │ ├─ Desc     │        │ - Range  │ using  │  │         │
+    │ └─ Action   │        │          │ LLM    │  │         │
     └──────────────────────────────────────────┘  └─────────┘
         │             │          │        │         │
         │             │          │        │         │

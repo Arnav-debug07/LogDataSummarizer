@@ -4,7 +4,7 @@
 
 LogDataSummarizer implements a **two-mode analysis system**:
 
-1. **Automatic Analysis Mode** (DEFAULT) — Generates human-readable summaries of all telemetry data
+1. **Automatic Analysis Mode** (DEFAULT) — Generates a brief event-timeline paragraph followed by an optional detailed summary
 2. **Query Mode** (OPTIONAL) — RAG-powered Q&A for deep-dive investigations
 
 The system combines semantic search, persistent memory, and local LLM inference to deliver expert-level analysis without external API calls.
@@ -15,8 +15,8 @@ The system combines semantic search, persistent memory, and local LLM inference 
 ┌─────────────────────────────────────────────────────────────┐
 │                     USER INPUT                              │
 │                                                             │
-│  Interactive → JSON File → Query                           │
-│    Records     Upload     Database                         │
+│  Text File → JSON File → Query                              │
+│   Upload     Upload     Database                            │
 └────────────────────┬────────────────────────────────────────┘
                      │
                      ▼
@@ -50,13 +50,24 @@ The system combines semantic search, persistent memory, and local LLM inference 
                      │
                      ▼
         ┌────────────────────────┐
-        │  AUTOMATIC ANALYSIS    │
-        │  (Main Feature)        │
+        │  BRIEF EVENT SUMMARY   │
+        │  (Default View)        │
         │                        │
-        │ 1. Generate Summary    │
-        │ 2. Extract Metrics     │
-        │ 3. Identify Anomalies  │
+        │ 1. Sort events by time │
+        │ 2. Build event list    │
+        │ 3. LLM narrates as     │
+        │    plain paragraph     │
         └────────────┬───────────┘
+                     │
+                     ▼
+        ┌────────────────────────────────────┐
+        │  OPTIONAL DETAILED SUMMARY         │
+        │  (User prompted: y/n)              │
+        │                                    │
+        │ 1. Calculate full statistics       │
+        │ 2. Identify anomalies & patterns   │
+        │ 3. LLM generates in-depth report   │
+        └────────────┬───────────────────────┘
                      │
          ┌───────────┴───────────┐
          │                       │
@@ -86,17 +97,20 @@ The system combines semantic search, persistent memory, and local LLM inference 
 ```
 Load Data
     ↓
-[Automatic Summary Generation]
+[Brief Event Summary Generation]
+    ├─ Sort all records by timestamp
+    ├─ Build chronological event list
+    └─ LLM narrates as plain paragraph
+    ↓
+[Display Brief Summary]
+    └─ Plain-English paragraph of all events with timestamps
+    ↓
+[Optional: Detailed Summary]
+    ├─ User prompted (y/n)
     ├─ Extract telemetry statistics
     ├─ Identify anomalies
     ├─ Detect fault patterns
-    └─ Generate human-readable report
-    ↓
-[Display Summary]
-    ├─ Overall system status
-    ├─ Key events
-    ├─ Performance metrics
-    └─ Critical issues
+    └─ Generate in-depth narrative report
     ↓
 [Post-Analysis Menu]
     ├─ View error codes
@@ -140,11 +154,40 @@ User Question
 
 ## 🧠 Core Components
 
-### 1. **Automatic Summary Generator**
+### 1. **Brief Event Summary Generator**
+
+**Function:** `generate_brief_event_summary()`
+
+**Purpose:** Generate a concise, plain-English paragraph narrating every event in chronological order. This is the default view shown immediately after Option 4 is selected.
+
+**Process:**
+
+```python
+1. Load all telemetry data from database
+2. Sort records by timestamp (ascending)
+3. Build structured event list:
+   - timestamp
+   - radar_id
+   - error_code
+   - log_message
+4. Prompt LLM to narrate as a single flowing paragraph
+5. Fallback: build paragraph manually if LLM unavailable
+6. Return narrative paragraph
+```
+
+**Output Example:**
+```
+At 14:00:00, radar AN-FPS-117_A began normal sweep operations with stable
+thermal gradients. At 14:02:15, a critical voltage drop was detected,
+falling below safe operating margins. By 14:10:00, unit AN-FPS-117_B
+completed a routine scan with no anomalies reported.
+```
+
+### 2. **Detailed Summary Generator**
 
 **Function:** `generate_human_readable_summary()`
 
-**Purpose:** Create accessible, non-technical summaries of telemetry data
+**Purpose:** Create a full in-depth analysis of telemetry data. Shown only when the user opts in after the brief summary.
 
 **Process:**
 
@@ -166,12 +209,12 @@ User Question
 
 **Output Example:**
 ```
-"The radar system operated for 4 hours with stable performance. 
-Three voltage anomalies detected at specific times. System automatically 
+"The radar system operated for 4 hours with stable performance.
+Three voltage anomalies detected at specific times. System automatically
 recovered after each incident. Overall health status: GOOD."
 ```
 
-### 2. **Error Code Reference System**
+### 3. **Error Code Reference System**
 
 **Data Structure:** `ERROR_CODE_REFERENCE` dictionary
 
@@ -193,7 +236,7 @@ ERROR_CODE_REFERENCE = {
 }
 ```
 
-### 3. **LanceDB Vector Database**
+### 4. **LanceDB Vector Database**
 
 **Purpose:** Store and retrieve radar telemetry logs with semantic embeddings
 
@@ -222,7 +265,7 @@ class RadarLogSchema(LanceModel):
 | Export to Pandas | `table.to_pandas()` | Convert to DataFrame |
 | Query | Manual pandas filtering | Search by text |
 
-### 4. **Embedding Model: BAAI/BGE-Small-EN-v1.5**
+### 5. **Embedding Model: BAAI/BGE-Small-EN-v1.5**
 
 **Purpose:** Convert text queries and log messages into 384-dimensional vectors
 
@@ -238,7 +281,7 @@ registry = get_registry().get("sentence-transformers")
 embedding_model = registry.create(name="BAAI/bge-small-en-v1.5")
 ```
 
-### 5. **Ollama + Qwen LLM**
+### 6. **Ollama + Qwen LLM**
 
 **Purpose:** Generate expert-level analysis and summaries
 
@@ -251,7 +294,7 @@ embedding_model = registry.create(name="BAAI/bge-small-en-v1.5")
 - Timeout: 300 seconds
 - Temperature: 0.0 (deterministic)
 
-### 6. **Continuum Memory System**
+### 7. **Continuum Memory System**
 
 **Purpose:** Persist fault history and anomalies across sessions
 
@@ -276,7 +319,7 @@ embedding_model = registry.create(name="BAAI/bge-small-en-v1.5")
 ### Phase 1: Data Input & Ingestion
 
 ```
-User Input (Interactive/JSON)
+User Input (Text File / JSON File)
     ↓
 [Schema Validation]
     ├─ Check field types
@@ -294,7 +337,53 @@ User Input (Interactive/JSON)
 Local Vector Database: ./local_radar_db/
 ```
 
-### Phase 2: Automatic Summary Generation
+### Phase 1b: Text File Parsing (Option 1)
+
+```
+Open .txt file
+    ↓
+Read lines (skip blanks and # comments)
+    ↓
+For each line:
+    Split on | (pipe)
+    ├─ fields[0] → radar_id
+    ├─ fields[1] → timestamp
+    ├─ fields[2] → azimuth (float)
+    ├─ fields[3] → elevation (float)
+    ├─ fields[4] → voltage_mv (int)
+    ├─ fields[5] → error_code
+    └─ fields[6:] joined → log_message (pipe-safe)
+    ↓
+Report skipped lines with warnings
+    ↓
+Bulk insert valid records
+```
+
+### Phase 2: Brief Event Summary Generation (Option 4)
+
+```
+Load All Data
+    ↓
+[Sort by Timestamp]
+    └─ ascending chronological order
+    ↓
+[Build Event List]
+    ├─ timestamp
+    ├─ radar_id
+    ├─ error_code
+    └─ log_message
+    ↓
+[Prompt LLM]
+    ├─ Narrate as single paragraph
+    ├─ Include each event by timestamp
+    └─ Plain English, no jargon
+    ↓
+[Display Brief Summary]
+    ↓
+[Prompt User: View detailed summary? y/n]
+```
+
+### Phase 3: Detailed Summary Generation (Optional)
 
 ```
 Load All Data
@@ -311,39 +400,32 @@ Load All Data
     ├─ Format statistics
     ├─ Include sample data
     ├─ Add memory context
-    └─ Set analysis instructions
+    └─ Request professional narrative
     ↓
-[LLM Generates Summary]
-    ├─ Temperature = 0.0 (deterministic)
-    ├─ Timeout = 300 seconds
-    └─ Output: Narrative text
+[Call Qwen LLM]
+    ├─ Generate human-readable text
+    └─ Return formatted summary
     ↓
-[Display to User]
-    ├─ Print summary
-    ├─ Offer analysis menu
-    └─ Persist fault data
+[Display Detailed Summary]
 ```
 
-### Phase 3: Optional Query Mode
+### Phase 4: RAG Query Processing (Optional)
 
 ```
 User Question
     ↓
-[hybrid_retrieve()]
-    ├─ Search log_message
-    ├─ Search error_code
-    ├─ Search radar_id
-    └─ Return top 3 matches
+[Initial Retrieval]
+    ├─ Search: log_message, error_code, radar_id
+    ├─ Apply time filter if present
+    └─ Return top K matches
     ↓
 [LLM Evaluation]
-    ├─ Analyze results
-    ├─ Check if more data needed
-    └─ Return JSON decision
+    ├─ Analyze retrieved data
+    └─ Decide: needs_more_data? (JSON)
     ↓
 [Conditional Refinement]
-    ├─ If needs_more_data == true
-    │   └─ Execute refined query
-    └─ Combine results
+    ├─ If yes → execute refined query
+    └─ Merge results
     ↓
 [LLM Synthesis]
     ├─ Generate technical report
@@ -358,13 +440,33 @@ User Question
 
 ## 🎯 Key Functions
 
-### `generate_human_readable_summary(memory_engine)`
+### `generate_brief_event_summary(memory_engine)`
 
-**Purpose:** Automatic summary generation (main feature)
+**Purpose:** Default brief summary — chronological paragraph of all events
 
 **Input:** ContinuumMemory instance
 
-**Output:** Human-friendly narrative text
+**Output:** Plain-English paragraph narrating each event with its timestamp
+
+**Process:**
+1. Load and sort all telemetry data by timestamp
+2. Build structured event list
+3. Prompt LLM to narrate as a single paragraph
+4. Fallback to manual paragraph if LLM unavailable
+
+**Example Usage:**
+```python
+brief = generate_brief_event_summary(radar_memory)
+print(brief)  # Displays concise event timeline
+```
+
+### `generate_human_readable_summary(memory_engine)`
+
+**Purpose:** Detailed in-depth summary (shown on user request after brief summary)
+
+**Input:** ContinuumMemory instance
+
+**Output:** Human-friendly detailed narrative text
 
 **Process:**
 1. Load all telemetry data
@@ -376,7 +478,7 @@ User Question
 **Example Usage:**
 ```python
 summary = generate_human_readable_summary(radar_memory)
-print(summary)  # Displays human-readable analysis
+print(summary)  # Displays full analysis
 ```
 
 ### `display_error_code_details()`
@@ -394,6 +496,17 @@ print(summary)  # Displays human-readable analysis
 ├─ Description: Power supply voltage dropped below safe operating margins
 └─ Recommended Action: Check power supply connections...
 ```
+
+### `text_file_input_mode()`
+
+**Purpose:** Parse and ingest a pipe-separated plain text file
+
+**Format:** `radar_id|timestamp|azimuth|elevation|voltage_mv|error_code|log_message`
+
+**Features:**
+- Skips blank lines and `#` comment lines
+- Reports skipped lines with line numbers and reasons
+- Handles `|` characters inside the log_message field safely
 
 ### `hybrid_retrieve(query_text, time_filter, limit)`
 
@@ -432,8 +545,9 @@ print(summary)  # Displays human-readable analysis
 | Retrieval | No matches found | Return all records |
 | LLM Response | Invalid JSON | Use default values |
 | LLM Connection | Timeout | Return error message |
+| Brief Summary | LLM unavailable | Build paragraph manually |
 | Memory Save | JSON write failure | Log warning, continue |
-| Data Validation | Invalid format | Prompt retry |
+| Text File Parse | Invalid line | Skip with warning, continue |
 
 ### Exception Handling
 
@@ -459,13 +573,15 @@ finally:
 | Operation | Complexity | Time |
 |-----------|-----------|------|
 | Input validation | O(1) | ~1ms |
+| Text file parsing | O(n) | ~5ms |
 | Text embedding | O(n) | ~5ms |
 | Database retrieval | O(n) linear scan | ~10ms |
 | Pandas filtering | O(n) | ~20ms |
 | Statistics calculation | O(n) | ~50ms |
-| LLM summary generation | O(tokens) | 10-20 seconds |
+| LLM brief summary | O(tokens) | 10-20 seconds |
+| LLM detailed summary | O(tokens) | 10-20 seconds |
 | LLM query response | O(tokens) | 5-10 seconds |
-| **Total Summary Time** | **O(n + LLM)** | **10-25 seconds** |
+| **Total Brief Summary Time** | **O(n + LLM)** | **10-25 seconds** |
 | **Total Query Time** | **O(n + LLM)** | **15-30 seconds** |
 
 ### Memory Usage
@@ -595,6 +711,12 @@ Distributed Memory (Redis)
 ### Unit Tests (Recommended)
 
 ```python
+def test_brief_summary_generation():
+    brief = generate_brief_event_summary(radar_memory)
+    assert len(brief) > 50
+    # Should contain at least one timestamp reference
+    assert any(char.isdigit() for char in brief)
+
 def test_summary_generation():
     summary = generate_human_readable_summary(radar_memory)
     assert len(summary) > 100
@@ -608,6 +730,17 @@ def test_hybrid_retrieve():
     results = hybrid_retrieve("voltage error")
     assert isinstance(results, list)
     assert len(results) > 0
+
+def test_text_file_parsing():
+    # Write a temp file and confirm records are parsed correctly
+    import tempfile, os
+    content = "AN-FPS-117_A|2026-05-22 14:00:00|45.2|12.1|5000|OK|Test message\n"
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.txt', delete=False) as f:
+        f.write(content)
+        path = f.name
+    # Load and verify
+    # (implement as needed)
+    os.unlink(path)
 ```
 
 ### Integration Tests
@@ -617,7 +750,11 @@ def test_full_pipeline():
     # Load data
     bulk_add_telemetry(test_data)
     
-    # Generate summary
+    # Generate brief summary
+    brief = generate_brief_event_summary(radar_memory)
+    assert len(brief) > 0
+    
+    # Generate detailed summary
     summary = generate_human_readable_summary(radar_memory)
     assert "error" in summary.lower() or "normal" in summary.lower()
     
@@ -643,7 +780,8 @@ def test_full_pipeline():
 
 ### Key Concepts
 
-- **Automatic Summary Generation** — Generate insights without explicit queries
+- **Brief Event Summary** — Chronological paragraph narrating all events with timestamps
+- **Detailed Analysis Summary** — Full in-depth technical report (optional, user-triggered)
 - **RAG (Retrieval-Augmented Generation)** — Retrieve context before generation
 - **Vector Embeddings** — Dense representation of text meaning
 - **LLM Inference** — Running language models locally
@@ -652,8 +790,8 @@ def test_full_pipeline():
 
 ---
 
-**Architecture Version:** 3.0
-**Last Updated:** 24 May 2026
+**Architecture Version:** 4.0
+**Last Updated:** 26 May 2026
 **Status:** ✅ Production Ready
-**Analysis Mode:** Automatic Summary + Optional Query
+**Analysis Mode:** Brief Event Summary (default) + Optional Detailed Summary + Optional Query
 **Deployment:** Local, expandable to distributed

@@ -5,13 +5,14 @@
 **LogDataSummarizer** is an intelligent offline radar telemetry analysis system that leverages **Retrieval-Augmented Generation (RAG)** to interpret military radar logs and provide expert diagnostics. The system combines local LLM inference, vector embeddings, and persistent memory to deliver human-level technical analysis of radar system performance.
 
 ### Key Features
-- 🔍 **Automatic Summary Generation** — Human-readable summaries of all telemetry data on demand
+- 🔍 **Brief Event Summary** — Instant paragraph-style timeline of all events with timestamps on demand
+- 📊 **Detailed Analysis Summary** — In-depth system analysis available as an optional follow-up
 - 🔴 **Error Code Analysis** — Technical severity ratings and recommended actions for all faults
 - 🧠 **Intelligent Log Retrieval** — Semantic search with fallback mechanisms
 - 🔄 **Custom Query Mode** — Ask specific questions about your radar data via RAG pipeline
 - 💾 **Persistent Memory** — Tracks fault history across sessions
 - ⚡ **Production-Ready** — Comprehensive error handling and retry logic
-- 📥 **Multiple Input Methods** — Interactive, JSON file, or direct API
+- 📥 **Multiple Input Methods** — Text file (pipe-separated), JSON file, or direct API
 
 ---
 
@@ -106,22 +107,25 @@ source venv/bin/activate
 jupyter notebook Rag_Models.ipynb
 
 # Or run as Python script
-python Rag_Models.ipynb
+python radar_rag_engine.py
 ```
 
 ### Main Workflow
 
-1. **Data Input** (Options 1-5)
-   - Load telemetry data interactively or from JSON file
+1. **Data Input** (Options 1-6)
+   - Load telemetry data from a text file or JSON file
    - View expected data format
    - Check database statistics
 
-2. **Automatic Summary** (Generated automatically)
-   - Human-readable overview of all telemetry data
-   - Key events and anomalies highlighted
-   - Performance metrics summarized
+2. **Brief Event Summary** (Option 4 — shown automatically)
+   - Plain-English paragraph walking through every event in chronological order
+   - Each event described with its timestamp in plain language
 
-3. **Post-Analysis Options** (Menu appears after summary)
+3. **Detailed Analysis Summary** (Optional — prompted after brief summary)
+   - In-depth system-wide analysis
+   - Key anomalies, performance metrics, and critical issues
+
+4. **Post-Analysis Options** (Menu appears after summary)
    - View error code details with severity levels
    - Ask custom questions via RAG query mode
    - Export database stats
@@ -131,25 +135,28 @@ python Rag_Models.ipynb
 
 ## 📥 Data Input Guide
 
-### Option 1: Interactive Input
+### Option 1: Text File Input
 
-Select option **1** to enter telemetry records one by one:
+Create a plain text file with one record per line. Fields are separated by `|` (pipe):
 
 ```
---- Record #1 ---
-Radar ID (e.g., AN-FPS-117_A) [or 'done']: AN-FPS-117_A
-Timestamp (YYYY-MM-DD HH:MM:SS): 2026-05-22 14:00:00
-Azimuth (0-360): 45.2
-Elevation (-90 to +90): 12.1
-Voltage (mV): 5000
-Error Code (OK or ERR_XXX_DESCRIPTION): OK
-Log Message: Normal sweep operations. Thermal gradients stable.
+radar_id|timestamp|azimuth|elevation|voltage_mv|error_code|log_message
 ```
 
-**Tips:**
-- Type `done` when finished adding records
-- Type `skip` to cancel current record
-- Type `format` to display expected input format
+**Example: `telemetry_data.txt`**
+
+```
+AN-FPS-117_A|2026-05-22 14:00:00|45.2|12.1|5000|OK|Normal sweep operations. Thermal gradients stable.
+AN-FPS-117_A|2026-05-22 14:02:15|89.7|11.5|3100|ERR_403_UNDERVOLT|Critical: Voltage dropped below safe margins.
+AN-FPS-117_B|2026-05-22 14:10:00|120.0|8.5|4800|OK|Routine scan complete. No anomalies detected.
+```
+
+**Notes:**
+- Lines starting with `#` are treated as comments and ignored
+- Blank lines are skipped
+- If the log message itself contains `|`, it is handled correctly (only the first 6 pipes are used as delimiters)
+
+Then select option **1** and provide the file path.
 
 ### Option 2: JSON File Input
 
@@ -223,23 +230,36 @@ ERR_999_UNKNOWN         → Unknown error
 
 ## 📊 Analysis Features
 
-### 1. Automatic Summary (Default)
+### 1. Brief Event Summary (Option 4 — Default View)
 
-When you load data and select "Skip Input & Analyze Data", the system automatically generates:
-- Overall system status assessment
-- Key events and anomalies found
-- Performance metrics (voltage ranges, etc.)
-- Critical issues highlighted
+When you select "Brief Summary & Analyze Data", the system generates a concise plain-English paragraph that walks through every event in the log chronologically, calling out each timestamp in natural language. No headers, no jargon — just a clear narrative.
 
 **Example Output:**
 ```
-The radar system operated for approximately 4 hours with overall stable 
-performance. Three critical voltage anomalies were detected at 14:02:15, 
-14:45:30, and 15:20:45. The system recovered automatically after each 
-incident. Mechanical alignment remained within acceptable parameters.
+At 14:00:00 on 22 May 2026, radar unit AN-FPS-117_A began normal sweep
+operations with all thermal gradients within acceptable limits. At 14:02:15,
+a critical voltage drop was detected on the shifter power rail, falling below
+safe operating margins. By 14:10:00, unit AN-FPS-117_B completed a routine
+scan with no anomalies reported.
 ```
 
-### 2. Error Code Details (Option 1)
+After the brief summary is printed, you are prompted:
+
+```
+[?] Would you like to view the detailed analysis summary? (y/n):
+```
+
+Entering `y` triggers the full in-depth analysis (see below).
+
+### 2. Detailed Analysis Summary (Optional — Triggered from Option 4)
+
+An in-depth analysis covering:
+- Overall system status assessment
+- Key events and anomalies
+- Performance metrics (voltage ranges, error distributions)
+- Critical issues highlighted
+
+### 3. Error Code Details (Post-Analysis Option 1)
 
 View comprehensive technical information about each error code:
 
@@ -247,35 +267,22 @@ View comprehensive technical information about each error code:
 [ERR_403_UNDERVOLT] (Occurrences: 3)
 ├─ Severity: 🔴 CRITICAL
 ├─ Description: Power supply voltage dropped below safe operating margins
-└─ Recommended Action: Check power supply connections and voltage regulator. 
+└─ Recommended Action: Check power supply connections and voltage regulator.
                        May require immediate system shutdown.
-
-[ERR_601_THERMAL_HIGH] (Occurrences: 1)
-├─ Severity: 🟠 HIGH
-├─ Description: Internal temperature exceeds safe operating limits
-└─ Recommended Action: Check cooling system and ventilation. 
-                       Reduce operational load if necessary.
 ```
 
-### 3. Custom Query Mode (Option 2)
+### 4. Custom Query Mode (Post-Analysis Option 2)
 
 Ask specific questions about your data using the RAG pipeline:
 
 ```
 [Query] Enter your inquiry: Why did the system shutdown at 15:45?
 
-[*] Processing inquiry...
-[DEBUG] Database has 62 records
-[DEBUG] Searching for: 'shutdown'
-[DEBUG] Found 5 matches
-
 📋 QUERY RESPONSE
 ═══════════════════════════════════════════════════════════════════════════
-The system shutdown at 15:45:22 was triggered by a cascading sequence of events.
-An initial voltage anomaly at 15:43:15 caused the shifter power rail to drop 
-below 3000mV. This triggered thermal stress on the power conditioning unit, 
-resulting in a high-temperature alert at 15:44:50. The system's automatic 
-failsafe protocol then initiated a controlled shutdown sequence.
+The system shutdown at 15:45:22 was triggered by a cascading sequence of
+events. An initial voltage anomaly at 15:43:15 caused the shifter power rail
+to drop below 3000mV...
 ═══════════════════════════════════════════════════════════════════════════
 ```
 
@@ -283,7 +290,7 @@ failsafe protocol then initiated a controlled shutdown sequence.
 
 ## 🔍 Post-Analysis Menu
 
-After the automatic summary is generated, you have access to:
+After the summary flow, you have access to:
 
 ```
 🔧 POST-ANALYSIS OPTIONS
@@ -301,7 +308,7 @@ After the automatic summary is generated, you have access to:
 | 1 | Technical details for each error code | Understanding what went wrong |
 | 2 | RAG-powered Q&A about your data | Deep investigation of specific events |
 | 3 | Database statistics | Quick overview of data volume |
-| 4 | Regenerate summary | See new insights or verify previous analysis |
+| 4 | Regenerate detailed summary | See new insights or verify previous analysis |
 | 5 | Exit cleanly | End session and save memory state |
 
 ---
@@ -310,7 +317,7 @@ After the automatic summary is generated, you have access to:
 
 ```
 LogDataSummarizer/
-├── Rag_Models.ipynb                  # Main RAG pipeline (Jupyter notebook)
+├── radar_rag_engine.py               # Main RAG pipeline
 ├── README.md                         # This file (setup & usage)
 ├── ARCHITECTURE.md                   # Technical deep-dive
 ├── local_radar_db/                   # LanceDB vector database (auto-created)
@@ -318,14 +325,15 @@ LogDataSummarizer/
 │   └── radar_telemetry.lance
 ├── radar_continuum_memory.json       # Persistent fault history (auto-created)
 ├── venv/                             # Python virtual environment
-└── telemetry_data.json               # Sample data (create yourself)
+├── telemetry_data.txt                # Sample text data (create yourself)
+└── telemetry_data.json               # Sample JSON data (create yourself)
 ```
 
 ---
 
 ## ⚙️ Configuration
 
-Edit these constants in `Rag_Models.ipynb` to customize:
+Edit these constants in `radar_rag_engine.py` to customize:
 
 ```python
 # API Configuration
@@ -369,8 +377,16 @@ ollama list
 
 **Solution:**
 - Load telemetry data first (Option 1 or 2 in input menu)
-- Verify JSON format is correct (use Option 3)
+- Verify file format is correct (use Option 3)
 - Check database stats (Option 5)
+
+### Text file not loading correctly
+
+**Solution:**
+- Ensure fields are separated by `|` (pipe character)
+- Verify exactly 7 fields per line (radar_id, timestamp, azimuth, elevation, voltage_mv, error_code, log_message)
+- Lines starting with `#` are skipped (use for comments)
+- Check the warning output — skipped lines are reported with their line numbers
 
 ### Summary generation takes too long
 
@@ -387,7 +403,7 @@ rm -rf local_radar_db
 rm radar_continuum_memory.json
 
 # Restart the system
-python Rag_Models.ipynb
+python radar_rag_engine.py
 ```
 
 ---
@@ -398,7 +414,8 @@ python Rag_Models.ipynb
 |--------|-------|
 | Embedding Generation | ~50ms per query |
 | Database Query | ~10ms (pandas filtering) |
-| LLM Summary Generation | ~10-20 seconds (7B model) |
+| LLM Brief Summary | ~10-20 seconds (7B model) |
+| LLM Detailed Summary | ~10-20 seconds (7B model) |
 | LLM Query Response | ~5-10 seconds |
 | Total Pipeline Time | ~15-30 seconds |
 | Database Size | ~100MB for 1K records |
@@ -408,12 +425,13 @@ python Rag_Models.ipynb
 ## 🚀 Next Steps
 
 1. **Add Custom Radar Data**
-   - Use Interactive Input (Option 1)
-   - Or prepare JSON file (Option 2)
+   - Prepare a pipe-separated text file (Option 1)
+   - Or prepare a JSON file (Option 2)
    - View format with Option 3
 
 2. **Explore Your Data**
-   - Generate automatic summary
+   - Generate brief event summary (Option 4)
+   - Optionally view detailed analysis
    - View error code details
    - Ask custom questions
 
@@ -434,7 +452,7 @@ python Rag_Models.ipynb
 ## 📖 Documentation
 
 - **[ARCHITECTURE.md](./ARCHITECTURE.md)** — Technical deep-dive, system flow, tool explanations
-- **Inline Code Comments** — Comprehensive comments throughout `Rag_Models.ipynb`
+- **Inline Code Comments** — Comprehensive comments throughout `radar_rag_engine.py`
 
 ---
 
@@ -465,6 +483,6 @@ This project is for educational and research purposes.
 
 ---
 
-**Last Updated:** 24 May 2026
+**Last Updated:** 26 May 2026
 **Status:** ✅ Production Ready
-**Version:** 3.0 (Automatic Summary Mode)
+**Version:** 4.0 (Brief Event Summary + Optional Detailed Analysis)

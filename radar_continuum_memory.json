@@ -7,10 +7,14 @@
     "ERR_601_THERMAL_HIGH",
     "6",
     "ERR_801_COMMS_LOSS",
-    "ERR_999_UNKNOWN"
+    "ERR_999_UNKNOWN",
+    "ERR_900_UNKNOWN",
+    "ERR_302_FREQ_FAULT"
   ],
   "active_anomalies": {
-    "AN-FPS-117_A": "Last fault tracked: ERR_601_THERMAL_HIGH",
-    "": "Last fault tracked: 6"
+    "AN-FPS-117_A": "Last fault tracked: ERR_999_UNKNOWN",
+    "": "Last fault tracked: 6",
+    "AN-FPS-117_D": "Last fault tracked: ERR_900_UNKNOWN",
+    "TRANSMITTER": "Last fault tracked: ERR_302_FREQ_FAULT"
   }
 }

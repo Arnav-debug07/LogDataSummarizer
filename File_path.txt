@@ -1,1 +1,1 @@
-/Users/arnav/App_development/LogDataSummarizer/telemetry_test_dataset.json
+/Users/arnav/App_development/LogDataSummarizer/telemetry_test_data.txt

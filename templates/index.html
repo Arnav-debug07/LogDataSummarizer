@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Radar Telemetry Analyzer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+<body>
+    <header class="header">
+        <h1 class="header-title">RADAR TELEMETRY ANALYZER</h1>
+        <img src="/static/drdo_logo.png" alt="DRDO Logo" class="logo">
+    </header>
+
+    <div class="upload-bar">
+        <span class="upload-text">UPLOAD YOUR DATA HERE (ONLY TEXT AND JSON LOG FILE SUPPORTED)</span>
+        <input type="file" id="file-upload" accept=".txt,.json" class="file-input">
+        <label for="file-upload" class="btn btn-upload">CHOOSE FILE</label>
+        <button id="upload-btn" class="btn btn-upload" onclick="uploadFile()">UPLOAD</button>
+        <span id="upload-status" class="status-msg"></span>
+    </div>
+
+    <main class="main-content">
+        <div class="button-grid">
+            <button class="btn btn-action" onclick="runAction('brief_summary')">BRIEF<br>SUMMARY</button>
+            <button class="btn btn-action" onclick="promptInteractive()">INTERACTIVE<br>SUMMARY</button>
+            <button class="btn btn-action" onclick="runAction('deep_analysis')">DEEP<br>ANALYSIS</button>
+            <button class="btn btn-action" onclick="runAction('graphical_summary')">GRAPHICAL<br>SUMMARY</button>
+        </div>
+
+        <div id="interactive-container" class="interactive-container hidden">
+            <input type="text" id="query-input" placeholder="Type your interactive query here...">
+            <button class="btn btn-search" onclick="runInteractive()">Search</button>
+        </div>
+
+        <section id="result-section" class="result-section hidden">
+            <div class="result-header">
+                <h2>Analysis Report</h2>
+                <button class="btn btn-error-codes" onclick="runAction('error_codes')">VIEW ERROR CODES & SEVERITY</button>
+            </div>
+            <div id="result-content" class="result-content"></div>
+        </section>
+    </main>
+    
+    <footer class="footer">
+    </footer>
+
+    <script src="/static/script.js"></script>
+</body>
+</html>

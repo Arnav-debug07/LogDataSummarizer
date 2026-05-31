@@ -1,0 +1,236 @@
+:root {
+    --primary-blue: #003366;
+    --text-white: #ffffff;
+    --bg-overlay: rgba(255, 255, 255, 0.85);
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Noto Sans', sans-serif;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    background-color: var(--primary-blue);
+}
+
+.header {
+    background-color: var(--primary-blue);
+    color: var(--text-white);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 40px;
+    position: relative;
+    height: 100px;
+    z-index: 10;
+}
+
+.header-title {
+    font-size: 2.5rem;
+    font-weight: 800;
+    letter-spacing: 2px;
+}
+
+.logo {
+    height: 80px;
+    position: absolute;
+    right: 40px;
+    background: white;
+    padding: 5px;
+    border-radius: 5px;
+}
+
+.upload-bar {
+    background-color: var(--bg-overlay);
+    padding: 15px 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    position: relative;
+    z-index: 10;
+}
+
+.upload-text {
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: #000;
+}
+
+.file-input {
+    display: none;
+}
+
+.btn {
+    cursor: pointer;
+    border: none;
+    font-family: 'Noto Sans', sans-serif;
+    font-weight: 700;
+    text-align: center;
+    transition: transform 0.2s, background-color 0.2s;
+}
+
+.btn-upload {
+    background-color: #8c98a3;
+    color: white;
+    padding: 10px 25px;
+    border-radius: 20px;
+    font-size: 1rem;
+}
+
+.btn-upload:hover {
+    background-color: #6e7d8c;
+}
+
+.status-msg {
+    font-weight: 600;
+    margin-left: 10px;
+}
+
+.main-content {
+    flex: 1;
+    position: relative;
+    padding: 60px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    z-index: 1;
+}
+
+.main-content::before {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-image: url('/static/plane_bg.png');
+    background-size: cover;
+    background-position: center center;
+    z-index: -2;
+}
+
+.main-content::after {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: rgba(128, 128, 128, 0.62);
+    z-index: -1;
+}
+
+.button-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 60px 120px;
+    width: 100%;
+    max-width: 1000px;
+}
+
+.btn-action {
+    background-color: var(--primary-blue);
+    color: var(--text-white);
+    font-size: 1.6rem;
+    font-weight: 800;
+    padding: 40px;
+    border-radius: 40px;
+    box-shadow: 0px 8px 15px rgba(0,0,0,0.4);
+    line-height: 1.4;
+}
+
+.btn-action:hover {
+    transform: scale(1.05);
+    background-color: #002244;
+}
+
+.interactive-container {
+    margin-top: 40px;
+    display: flex;
+    gap: 15px;
+    width: 100%;
+    max-width: 800px;
+    background: rgba(0, 51, 102, 0.9);
+    padding: 20px;
+    border-radius: 15px;
+}
+
+.interactive-container input {
+    flex: 1;
+    padding: 15px;
+    font-size: 1.1rem;
+    border-radius: 8px;
+    border: none;
+}
+
+.btn-search {
+    background: white;
+    color: var(--primary-blue);
+    padding: 15px 30px;
+    border-radius: 8px;
+    font-size: 1.1rem;
+}
+
+.result-section {
+    margin-top: 40px;
+    width: 100%;
+    max-width: 1200px;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 20px;
+    padding: 30px;
+    box-shadow: 0px 10px 30px rgba(0,0,0,0.5);
+    color: #333;
+}
+
+.result-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    border-bottom: 2px solid var(--primary-blue);
+    padding-bottom: 10px;
+}
+
+.result-header h2 {
+    color: var(--primary-blue);
+}
+
+.btn-error-codes {
+    background-color: var(--primary-blue);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 10px;
+}
+
+.btn-error-codes:hover {
+    background-color: #002244;
+}
+
+.result-content {
+    font-size: 1rem;
+    line-height: 1.6;
+}
+
+.result-content h1, .result-content h2, .result-content h3 {
+    color: var(--primary-blue);
+    margin-top: 15px;
+}
+
+.result-content img {
+    max-width: 100%;
+    border-radius: 8px;
+    margin-top: 15px;
+    border: 2px solid var(--primary-blue);
+}
+
+.hidden {
+    display: none !important;
+}
+
+.footer {
+    background-color: var(--primary-blue);
+    height: 80px;
+    width: 100%;
+    position: relative;
+    z-index: 10;
+}
